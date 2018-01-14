@@ -30,5 +30,13 @@ public class Vehicle {
     public void undoGarboCaused() {
         
     }
+    
+    public String pathToString(){
+        StringBuffer sb = new StringBuffer();
+        for(Node n:path){
+            sb.append(n.id + " ");
+        }        
+        return sb.toString();
+    }
 
 }

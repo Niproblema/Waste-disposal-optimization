@@ -6,9 +6,9 @@ import java.util.Random;
 
 public class Solver {
 
-    public final static double pheromonStrength = 10000;
+    public final static double pheromonStrength = 10;
     public final static double newPheromonShare = 0.2;
-    public final static double pheromonExpiryTime = 1000;
+    public final static double pheromonExpiryTime = 600;
 
     public Vehicle[] solution, bestSol;
     public long nRuns;
@@ -23,26 +23,31 @@ public class Solver {
     }
 
     public LinkedList<Vehicle> solveAntColony(int startId, int maxIterations) {
-        confirmAndResetCurrGarb();
-        main_ass6.resetAllPheromonePaths();
+        resetGarb();
+        softResetPheromones(); 
+        //main_ass6.hardResetPheromones();
         int noImpoveCounter = 0;
         double bestSolValue = Double.MAX_VALUE;
         LinkedList<Vehicle> optiSol = new LinkedList();
         for (int iterationCounter = 0; iterationCounter <= maxIterations && noImpoveCounter <= main_ass6.MAX_NO_IMPROVEMENT; iterationCounter++) {
-            confirmAndResetCurrGarb();
-            if (iterationCounter % 1000 == 0) {
+            confirmGarbTakenOut();
+            softResetPheromones(); //Optimization?
+            if (iterationCounter % 500 == 0) {
                 System.out.println("AntColony ite:" + iterationCounter + " Best sol:" + Double.toString(bestSolValue));
             }
             LinkedList<Vehicle> newSol = new LinkedList<>();
-            for (int vechAmount = 0; vechAmount < 2 * nRuns; vechAmount++) {
+            double garbageLimit = main_ass6.sumGarbage[garbIndex];
+            double garbCounter = 0;
+            for (int vechAmount = 0; vechAmount < 2 * nRuns && garbCounter < garbageLimit; vechAmount++) {
 
                 boolean passTest = false;
                 int noImprovementCounter2 = 0;
+
                 while (!passTest && noImprovementCounter2 <= main_ass6.MAX_NO_IMPROVEMENT) {
                     double[] nodeCargoStateBeforeExploration = snapshotGarbageState();
-
                     Vehicle newAnt = new Vehicle();
                     if (main_ass6.nodes[startId].startAnt(newAnt, garbIndex)) {
+                        garbCounter += newAnt.load;
                         passTest = true;
                         newSol.add(newAnt);
                         noImprovementCounter2 = 0;
@@ -53,8 +58,10 @@ public class Solver {
                     }
                 }
             }
+            resetGarb();
             if (evaluateSolution(newSol)) {
                 double cost = getSolutionCost(newSol);
+
                 if (cost < bestSolValue) {
                     bestSolValue = cost;
                     optiSol = newSol;
@@ -103,7 +110,7 @@ public class Solver {
     }
 
     public boolean evaluatePath(Vehicle solPath) {
-        confirmAndResetCurrGarb();
+        confirmGarbTakenOut();
         double cost = 10;
         double load = 0;
         double distance = 0;
@@ -112,7 +119,7 @@ public class Solver {
         if (path.getFirst() != path.getLast() || path.size() <= 1) {
             return false;
         } else {
-
+            solPath.routes = new LinkedList<>();
             Iterator<Node> itee = path.iterator();
             Node prev = itee.next();
             while (itee.hasNext()) {
@@ -161,27 +168,35 @@ public class Solver {
                 return false;
             }
         }
-        return confirmAndResetCurrGarb();
+        return confirmGarbTakenOut();
     }
 
     public boolean evaluateSolution(LinkedList<Vehicle> sol) {
+        if (sol.isEmpty()) {
+            return false;
+        }
         for (Vehicle v : sol) {
             if (!evaluatePath(v)) {
                 return false;
             }
         }
-        return confirmAndResetCurrGarb();
+        return confirmGarbTakenOut();
     }
 
-    public boolean confirmAndResetCurrGarb() {
+    public boolean confirmGarbTakenOut() {
         boolean rtn = true;
         for (int i = 1; i <= main_ass6.nNodes; i++) {
             if (main_ass6.nodes[i].currGarb[garbIndex] != 0) {
                 rtn = false;
-                main_ass6.nodes[i].currGarb[garbIndex] = main_ass6.nodes[i].originalGarb[garbIndex];
             }
         }
         return rtn;
+    }
+
+    public void resetGarb() {
+        for (int i = 1; i <= main_ass6.nNodes; i++) {
+            main_ass6.nodes[i].currGarb[garbIndex] = main_ass6.nodes[i].originalGarb[garbIndex];
+        }
     }
 
     private double getSolutionCost(LinkedList<Vehicle> newSol) {
@@ -205,7 +220,14 @@ public class Solver {
         for (Route r : allRoutes) {
             r.curr_pheromones = Math.max(1, r.curr_pheromones * (1 - (tTime / pheromonExpiryTime)));
         }
+    }
 
+    private void softResetPheromones() {
+        LinkedList<Route> allRoutes = main_ass6.routes;
+        for (Route r : allRoutes) {
+            //r.resetPheromones();
+            r.curr_pheromones = Math.max(1, r.curr_pheromones* 0.4 );
+        }
     }
 
     private double[] snapshotGarbageState() {

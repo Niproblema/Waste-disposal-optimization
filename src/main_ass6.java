@@ -16,7 +16,7 @@ public class main_ass6 {
     public static Node[] nodes;
     public static LinkedList<Route> routes;
     public static double[] sumGarbage;
-    public final static double MAX_NO_IMPROVEMENT = 100;
+    public final static double MAX_NO_IMPROVEMENT = 1000;
     public final static double VEHICLE_SPEED = 50;
     public static int MAX_STOPS;
     public static Random rng;
@@ -67,21 +67,38 @@ public class main_ass6 {
         ///////////////////////////////////////////////////// 
         ////First garbage type////
         long nTripsType1 = Math.round(Math.ceil(sumGarbage[1] / (double) truckCapacity));
+        long nTripsType2 = Math.round(Math.ceil(sumGarbage[2] / (double) truckCapacity));
+        long nTripsType3 = Math.round(Math.ceil(sumGarbage[3] / (double) truckCapacity));
         Solver G1 = new Solver(nTripsType1, 1);
-        G1.solveAntColony(1, 100000);
-//        Solver G2 = new Solver(nTripsType1, 2);
-//        G2.solveAntColony(1, 100000);
-//        Solver G3 = new Solver(nTripsType1, 3);
-//        G3.solveAntColony(1, 100000);
+        LinkedList<Vehicle> S1 =  G1.solveAntColony(1, 100000);
+        Solver G2 = new Solver(nTripsType1, 2);
+        LinkedList<Vehicle> S2 =  G2.solveAntColony(1, 100000);
+        Solver G3 = new Solver(nTripsType1, 3);
+        LinkedList<Vehicle> S3 =  G3.solveAntColony(1, 100000);
+        
+        
+        printSolution(S1);
+        printSolution(S2);
+        printSolution(S3);
 
     }
 
-    public static void resetAllPheromonePaths() {
+    public static void hardResetPheromones() {
         Iterator<Route> routeIte = routes.iterator();
         while (routeIte.hasNext()) {
             Route r = routeIte.next();
             r.resetPheromones();
         }
+    }
+
+    public static void printSolution(LinkedList<Vehicle> sol) {
+        StringBuffer sb = new StringBuffer();
+        int f = 0;
+        for (Vehicle v : sol) {
+            f++;
+            sb.append(" V" + f + ":" + v.pathToString() + "   ");
+        }
+        System.out.println("Solving result:" + sb.toString());
     }
 
 }

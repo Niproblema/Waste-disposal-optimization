@@ -19,14 +19,17 @@ public class Node {
         this.x = x;
         this.y = y;
         currGarb = new double[4];
+        originalGarb = new double[4];
         currGarb[1] = orgGarbo;
         currGarb[2] = plasGarbo;
         currGarb[3] = paperGarbo;
-        originalGarb = currGarb.clone();
+        originalGarb[1] = orgGarbo;
+        originalGarb[2] = plasGarbo;
+        originalGarb[3] = paperGarbo;
 
         inRoutes = new LinkedList[main_ass6.nNodes + 1];
         outRoutes = new LinkedList[main_ass6.nNodes + 1];
-        for(int l = 0; l <= main_ass6.nNodes; l++){
+        for (int l = 0; l <= main_ass6.nNodes; l++) {
             inRoutes[l] = new LinkedList<>();
             outRoutes[l] = new LinkedList<>();
         }
@@ -73,7 +76,7 @@ public class Node {
 
     public boolean startAnt(Vehicle v, int garbIndex) {
         v.addNode(this);
-        v.totalTime+=12;
+        v.totalTime += 12;
         double spaceLeft = main_ass6.truckCapacity - v.load;
         if (spaceLeft > this.currGarb[garbIndex]) {
             v.load += this.currGarb[garbIndex];
@@ -84,11 +87,11 @@ public class Node {
         }
         if (v.path.size() > main_ass6.MAX_STOPS) {
             return false;
-        }        
+        }
         if (v.loc == 1 && v.path.size() != 1) {
             return v.load != 0;
         }
-        
+
         double sumPheromones = 0;
         for (Route r : allOutRoutes) {
             sumPheromones += r.curr_pheromones;
@@ -103,6 +106,7 @@ public class Node {
                     double rollDice = main_ass6.rng.nextDouble() * 1000;
                     if (rollDice <= chanceLimit) {
                         v.totalTime += r.Distance / main_ass6.VEHICLE_SPEED;
+                        v.routes.add(r);
                         return main_ass6.nodes[r.getEnd(id)].startAnt(v, garbIndex);
                     }
                 }
