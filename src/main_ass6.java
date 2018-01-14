@@ -16,7 +16,7 @@ public class main_ass6 {
     public static Node[] nodes;
     public static LinkedList<Route> routes;
     public static double[] sumGarbage;
-    public final static double MAX_NO_IMPROVEMENT = 696;
+    public final static double MAX_NO_IMPROVEMENT = 32000;
     public final static double VEHICLE_SPEED = 50;
     public static int MAX_STOPS;
     public static Random rng;
@@ -79,9 +79,8 @@ public class main_ass6 {
         printSolution(S1, 1);
         printSolution(S2, 2);
         printSolution(S3, 3);
-        
+//        System.out.println("\nTotal cost: "+ Double.toString(G2.bestSolCost));
         System.out.println("\nTotal cost: "+ Double.toString(G1.bestSolCost + G2.bestSolCost + G3.bestSolCost ));
-
     }
 
     public static void hardResetPheromones() {

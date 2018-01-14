@@ -2,6 +2,7 @@
 import java.text.Collator;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 public class Node {
@@ -100,18 +101,31 @@ public class Node {
             int select = main_ass6.rng.nextInt(allOutRoutes.size());
             return main_ass6.nodes[allOutRoutes.get(select).getEnd(id)].startAnt(v, garbIndex);
         } else {
-            while (true) {
-                for (Route r : allOutRoutes) {
-                    double chanceLimit = (r.curr_pheromones / sumPheromones) * 1000;
-                    double rollDice = main_ass6.rng.nextDouble() * 1000;
-                    if (rollDice <= chanceLimit) {
-                        v.totalTime += r.Distance / main_ass6.VEHICLE_SPEED;
-                        v.routes.add(r);
-                        return main_ass6.nodes[r.getEnd(id)].startAnt(v, garbIndex);
-                    }
+            double sumChance = 0;
+            double rollDice = main_ass6.rng.nextDouble() * 1000;  
+            for (Route r : allOutRoutes) {
+                sumChance += (r.curr_pheromones / sumPheromones) * 1000;
+
+                if (sumChance >= rollDice) {
+                    v.totalTime += r.Distance / main_ass6.VEHICLE_SPEED;
+                    v.routes.add(r);
+                    return main_ass6.nodes[r.getEnd(id)].startAnt(v, garbIndex);
                 }
             }
+
+//            while (true) {
+//                for (Route r : allOutRoutes) {
+//                    double chanceLimit = (r.curr_pheromones / sumPheromones) * 1000;
+//                    double rollDice = main_ass6.rng.nextDouble() * 1000;
+//                    if (rollDice <= chanceLimit) {
+//                        v.totalTime += r.Distance / main_ass6.VEHICLE_SPEED;
+//                        v.routes.add(r);
+//                        return main_ass6.nodes[r.getEnd(id)].startAnt(v, garbIndex);
+//                    }
+//                }
+//            }
         }
+        return false;
     }
 
 }

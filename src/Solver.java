@@ -31,7 +31,7 @@ public class Solver {
         bestSolCost = Double.MAX_VALUE;
         LinkedList<Vehicle> optiSol = new LinkedList();
         for (int iterationCounter = 0; iterationCounter <= maxIterations && noImpoveCounter <= main_ass6.MAX_NO_IMPROVEMENT; iterationCounter++) {
-            confirmGarbTakenOut();
+            resetGarb();
             softResetPheromones(); //Optimization?
             if (iterationCounter % 500 == 0) {
                 System.out.println("AntColony ite:" + iterationCounter + " Best sol:" + Double.toString(bestSolCost));
@@ -39,7 +39,7 @@ public class Solver {
             LinkedList<Vehicle> newSol = new LinkedList<>();
             double garbageLimit = main_ass6.sumGarbage[garbIndex];
             double garbCounter = 0;
-            for (int vechAmount = 0; !evaluateSolution(newSol) && vechAmount < 2 * nRuns && garbCounter < garbageLimit; vechAmount++) {
+            for (int vechAmount = 0; !evaluateSolution(newSol) && garbCounter < garbageLimit; vechAmount++) { //&& vechAmount < (10 * nRuns)
                 boolean passTest = false;
                 int noImprovementCounter2 = 0;
 
@@ -58,7 +58,6 @@ public class Solver {
                     }
                 }
             }
-            resetGarb();
             if (evaluateSolution(newSol)) {
                 double cost = getSolutionCost(newSol);
 
@@ -70,7 +69,6 @@ public class Solver {
                     noImpoveCounter++;
                 }
             }
-
         }
         return optiSol;
     }
@@ -109,7 +107,11 @@ public class Solver {
 //    }
 
     public boolean evaluatePath(Vehicle solPath) {
-        confirmGarbTakenOut();
+        double[] privateGarb = new double[main_ass6.nNodes + 1];    
+        for (int i = 1; i < main_ass6.nodes.length; i++) {
+            privateGarb[i] = main_ass6.nodes[i].originalGarb[garbIndex];
+        }
+                
         double cost = 10;
         double load = 0;
         double distance = 0;
@@ -142,11 +144,11 @@ public class Solver {
                     time += 30;
                 } else {
                     double spaceLeft = main_ass6.truckCapacity - load;
-                    if (spaceLeft > dis.currGarb[garbIndex]) {
-                        load += dis.currGarb[garbIndex];
-                        dis.currGarb[garbIndex] = 0;
+                    if (spaceLeft > privateGarb[garbIndex]) {
+                        load += privateGarb[garbIndex];
+                        privateGarb[garbIndex] = 0;
                     } else {
-                        dis.currGarb[garbIndex] -= spaceLeft;
+                        privateGarb[garbIndex] -= spaceLeft;
                         load += spaceLeft;
                     }
                     time += 12;
