@@ -79,7 +79,6 @@ public class main_ass6 {
         printSolution(S1, 1);
         printSolution(S2, 2);
         printSolution(S3, 3);
-//        System.out.println("\nTotal cost: "+ Double.toString(G2.bestSolCost));
         System.out.println("\nTotal cost: "+ Double.toString(G1.bestSolCost + G2.bestSolCost + G3.bestSolCost ));
     }
 

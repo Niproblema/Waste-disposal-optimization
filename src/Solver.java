@@ -9,6 +9,7 @@ public class Solver {
     public final static double pheromonStrength = 10;
     public final static double newPheromonShare = 0.2;
     public final static double pheromonExpiryTime = 600;
+    public final static double initialPheromon = 1;
 
     public Vehicle[] solution, bestSol;
     public long nRuns;
@@ -25,21 +26,21 @@ public class Solver {
 
     public LinkedList<Vehicle> solveAntColony(int startId, int maxIterations) {
         resetGarb();
-        softResetPheromones(); 
+        main_ass6.hardResetPheromones();
         //main_ass6.hardResetPheromones();
         int noImpoveCounter = 0;
         bestSolCost = Double.MAX_VALUE;
         LinkedList<Vehicle> optiSol = new LinkedList();
         for (int iterationCounter = 0; iterationCounter <= maxIterations && noImpoveCounter <= main_ass6.MAX_NO_IMPROVEMENT; iterationCounter++) {
             resetGarb();
-            softResetPheromones(); //Optimization?
+            //softResetPheromones(); //Optimization?
             if (iterationCounter % 500 == 0) {
                 System.out.println("AntColony ite:" + iterationCounter + " Best sol:" + Double.toString(bestSolCost));
             }
             LinkedList<Vehicle> newSol = new LinkedList<>();
             double garbageLimit = main_ass6.sumGarbage[garbIndex];
             double garbCounter = 0;
-            for (int vechAmount = 0; !evaluateSolution(newSol) && garbCounter < garbageLimit; vechAmount++) { //&& vechAmount < (10 * nRuns)
+            for (int vechAmount = 0; !evaluateSolution(newSol) && vechAmount < (10 * nRuns) && garbCounter < garbageLimit; vechAmount++) {
                 boolean passTest = false;
                 int noImprovementCounter2 = 0;
 
@@ -53,6 +54,7 @@ public class Solver {
                         noImprovementCounter2 = 0;
                         updatePheromones(newAnt);
                     } else {
+                        softResetPheromones();
                         snapshotGarbageState(nodeCargoStateBeforeExploration);
                         noImprovementCounter2++;
                     }
@@ -60,7 +62,8 @@ public class Solver {
             }
             if (evaluateSolution(newSol)) {
                 double cost = getSolutionCost(newSol);
-
+                //updatePathPheromones(newSol, cost);
+                
                 if (cost < bestSolCost) {
                     bestSolCost = cost;
                     optiSol = newSol;
@@ -208,7 +211,17 @@ public class Solver {
         }
         return rtn;
     }
-
+    
+    private void updatePathPheromones(LinkedList<Vehicle> sol, double cost){
+        double fi = 1/cost;
+        for(Vehicle v: sol){
+            for(Route r:v.routes){
+                r.curr_pheromones =  (1-fi)* r.curr_pheromones + newPheromonShare * fi; 
+            }
+        }
+        
+    }
+    
     private void updatePheromones(Vehicle newAnt) {
         double tTime = newAnt.totalTime;
 
@@ -218,17 +231,17 @@ public class Solver {
             selectedRoute.curr_pheromones = (1 - newPheromonShare) * selectedRoute.curr_pheromones + newPheromonShare * (pheromonStrength);
         }
 
-        LinkedList<Route> allRoutes = main_ass6.routes;
-        for (Route r : allRoutes) {
-            r.curr_pheromones = Math.max(1, r.curr_pheromones * (1 - (tTime / pheromonExpiryTime)));
-        }
+//        LinkedList<Route> allRoutes = main_ass6.routes;
+//        for (Route r : allRoutes) {
+//            r.curr_pheromones = Math.max(initialPheromon, r.curr_pheromones * (1 - (tTime / pheromonExpiryTime)));
+//        }
     }
 
     private void softResetPheromones() {
         LinkedList<Route> allRoutes = main_ass6.routes;
         for (Route r : allRoutes) {
             //r.resetPheromones();
-            r.curr_pheromones = Math.max(1, r.curr_pheromones* 0.7 );
+            r.curr_pheromones = Math.max(initialPheromon, r.curr_pheromones* 0.99);
         }
     }
 

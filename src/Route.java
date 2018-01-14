@@ -16,7 +16,7 @@ public class Route {
     }
 
     public void resetPheromones() {
-        curr_pheromones = 1;
+        curr_pheromones = Solver.initialPheromon;
     }
 
     public int getEnd(int Start) {
