@@ -14,6 +14,7 @@ public class Solver {
     public long nRuns;
     public int garbIndex;
     Random rand;
+    public double bestSolCost;
 
     public Solver(long nRuns, int garbIndex) {
         solution = new Vehicle[(int) nRuns];
@@ -27,19 +28,18 @@ public class Solver {
         softResetPheromones(); 
         //main_ass6.hardResetPheromones();
         int noImpoveCounter = 0;
-        double bestSolValue = Double.MAX_VALUE;
+        bestSolCost = Double.MAX_VALUE;
         LinkedList<Vehicle> optiSol = new LinkedList();
         for (int iterationCounter = 0; iterationCounter <= maxIterations && noImpoveCounter <= main_ass6.MAX_NO_IMPROVEMENT; iterationCounter++) {
             confirmGarbTakenOut();
             softResetPheromones(); //Optimization?
             if (iterationCounter % 500 == 0) {
-                System.out.println("AntColony ite:" + iterationCounter + " Best sol:" + Double.toString(bestSolValue));
+                System.out.println("AntColony ite:" + iterationCounter + " Best sol:" + Double.toString(bestSolCost));
             }
             LinkedList<Vehicle> newSol = new LinkedList<>();
             double garbageLimit = main_ass6.sumGarbage[garbIndex];
             double garbCounter = 0;
-            for (int vechAmount = 0; vechAmount < 2 * nRuns && garbCounter < garbageLimit; vechAmount++) {
-
+            for (int vechAmount = 0; !evaluateSolution(newSol) && vechAmount < 2 * nRuns && garbCounter < garbageLimit; vechAmount++) {
                 boolean passTest = false;
                 int noImprovementCounter2 = 0;
 
@@ -62,8 +62,8 @@ public class Solver {
             if (evaluateSolution(newSol)) {
                 double cost = getSolutionCost(newSol);
 
-                if (cost < bestSolValue) {
-                    bestSolValue = cost;
+                if (cost < bestSolCost) {
+                    bestSolCost = cost;
                     optiSol = newSol;
                     noImpoveCounter = 0;
                 } else {
@@ -75,39 +75,38 @@ public class Solver {
         return optiSol;
     }
 
-    public Vehicle[] solveTabu(int startId) {
-        boolean keepRunning = true;
-        for (int i = 1; i <= nRuns; i++) {
-            solution[i].addNode(main_ass6.nodes[startId]);
-        }
-        // Find original solution;
-        int[] permutation = new int[main_ass6.nNodes + 2];
-        permutation[1] = 1;
-        permutation[main_ass6.nNodes + 1] = 1;
-        for (int i = 2; i <= main_ass6.nNodes; i++) {
-            permutation[i] = i;
-        }
-        do {
-            for (int i = 2; i <= main_ass6.nNodes; i++) {
-                int rng = (int) (Math.random() * main_ass6.nNodes + 1);
-                int tem = permutation[rng];
-                permutation[rng] = permutation[i];
-                permutation[i] = tem;
-            }
-        } while (!evaluateSolution(solution));
-        //
-        bestSol = solution.clone();
-
-        int iteration = 0;
-        while (keepRunning) {
-            iteration++;
-            for (int k = 0; k < nRuns; k++) {
-                LinkedList<Node> pathSoFar = solution[k].path;
-
-            }
-        }
-        return bestSol;
-    }
+//    public Vehicle[] solveTabu(int startId) {
+//        boolean keepRunning = true;
+//        for (int i = 1; i <= nRuns; i++) {
+//            solution[i].addNode(main_ass6.nodes[startId]);
+//        }
+//        // Find original solution;
+//        int[] permutation = new int[main_ass6.nNodes + 2];
+//        permutation[1] = 1;
+//        permutation[main_ass6.nNodes + 1] = 1;
+//        for (int i = 2; i <= main_ass6.nNodes; i++) {
+//            permutation[i] = i;
+//        }
+//        do {
+//            for (int i = 2; i <= main_ass6.nNodes; i++) {
+//                int rng = (int) (Math.random() * main_ass6.nNodes + 1);
+//                int tem = permutation[rng];
+//                permutation[rng] = permutation[i];
+//                permutation[i] = tem;
+//            }
+//        } while (!evaluateSolution(solution));
+//        //
+//        bestSol = solution.clone();
+//
+//        int iteration = 0;
+//        while (keepRunning) {
+//            iteration++;
+//            for (int k = 0; k < nRuns; k++) {
+//                LinkedList<Node> pathSoFar = solution[k].path;
+//            }
+//        }
+//        return bestSol;
+//    }
 
     public boolean evaluatePath(Vehicle solPath) {
         confirmGarbTakenOut();
@@ -131,7 +130,7 @@ public class Solver {
                     if (r.Capacity >= load && rtn == false) {
                         rtn = true;
                         distance += r.Distance;
-                        time += r.Distance / main_ass6.VEHICLE_SPEED;
+                        time += r.Distance / (main_ass6.VEHICLE_SPEED/60);
                         solPath.routes.add(r);
                     }
                 }
@@ -154,6 +153,7 @@ public class Solver {
                 }
                 prev = dis;
             }
+            time = time /60;
             cost += distance * 0.1 + (time > 8 * 60 ? 20 * time : 10 * time);
         }
         solPath.cost = cost;
@@ -226,7 +226,7 @@ public class Solver {
         LinkedList<Route> allRoutes = main_ass6.routes;
         for (Route r : allRoutes) {
             //r.resetPheromones();
-            r.curr_pheromones = Math.max(1, r.curr_pheromones* 0.4 );
+            r.curr_pheromones = Math.max(1, r.curr_pheromones* 0.7 );
         }
     }
 

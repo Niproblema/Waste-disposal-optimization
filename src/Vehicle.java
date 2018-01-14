@@ -34,8 +34,9 @@ public class Vehicle {
     public String pathToString(){
         StringBuffer sb = new StringBuffer();
         for(Node n:path){
-            sb.append(n.id + " ");
+            sb.append(n.id + ",");
         }        
+        sb.deleteCharAt(sb.length()-1);
         return sb.toString();
     }
 

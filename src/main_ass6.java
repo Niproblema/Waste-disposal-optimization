@@ -16,7 +16,7 @@ public class main_ass6 {
     public static Node[] nodes;
     public static LinkedList<Route> routes;
     public static double[] sumGarbage;
-    public final static double MAX_NO_IMPROVEMENT = 1000;
+    public final static double MAX_NO_IMPROVEMENT = 696;
     public final static double VEHICLE_SPEED = 50;
     public static int MAX_STOPS;
     public static Random rng;
@@ -70,16 +70,17 @@ public class main_ass6 {
         long nTripsType2 = Math.round(Math.ceil(sumGarbage[2] / (double) truckCapacity));
         long nTripsType3 = Math.round(Math.ceil(sumGarbage[3] / (double) truckCapacity));
         Solver G1 = new Solver(nTripsType1, 1);
-        LinkedList<Vehicle> S1 =  G1.solveAntColony(1, 100000);
-        Solver G2 = new Solver(nTripsType1, 2);
-        LinkedList<Vehicle> S2 =  G2.solveAntColony(1, 100000);
-        Solver G3 = new Solver(nTripsType1, 3);
-        LinkedList<Vehicle> S3 =  G3.solveAntColony(1, 100000);
+        LinkedList<Vehicle> S1 = G1.solveAntColony(1, 100000);
+        Solver G2 = new Solver(nTripsType2, 2);
+        LinkedList<Vehicle> S2 = G2.solveAntColony(1, 100000);
+        Solver G3 = new Solver(nTripsType3, 3);
+        LinkedList<Vehicle> S3 = G3.solveAntColony(1, 100000);
+
+        printSolution(S1, 1);
+        printSolution(S2, 2);
+        printSolution(S3, 3);
         
-        
-        printSolution(S1);
-        printSolution(S2);
-        printSolution(S3);
+        System.out.println("\nTotal cost: "+ Double.toString(G1.bestSolCost + G2.bestSolCost + G3.bestSolCost ));
 
     }
 
@@ -91,14 +92,11 @@ public class main_ass6 {
         }
     }
 
-    public static void printSolution(LinkedList<Vehicle> sol) {
-        StringBuffer sb = new StringBuffer();
-        int f = 0;
+    public static void printSolution(LinkedList<Vehicle> sol, int gType) {
         for (Vehicle v : sol) {
-            f++;
-            sb.append(" V" + f + ":" + v.pathToString() + "   ");
+            StringBuffer sb = new StringBuffer();
+            sb.append(Integer.toString(gType) + "," + v.pathToString());
+            System.out.println(sb.toString());
         }
-        System.out.println("Solving result:" + sb.toString());
     }
-
 }
