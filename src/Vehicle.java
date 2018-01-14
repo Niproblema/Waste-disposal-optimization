@@ -8,7 +8,6 @@ public class Vehicle {
     public int loc;
     public LinkedList<Node> path;
     public LinkedList<Route> routes;
-    public double runningCost;
     double cost;
     public double totalDistance;
     public double totalTime;
@@ -16,11 +15,11 @@ public class Vehicle {
     public Vehicle() {
         load = 0;
         loc = 0;
-        runningCost = 10;
         path = new LinkedList<>();
         routes = new LinkedList();
         cost = 0;
         totalDistance = (double)0;
+        totalTime = (double)10;
     }
 
     public void addNode(Node n) {

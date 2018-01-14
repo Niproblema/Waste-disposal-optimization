@@ -17,6 +17,7 @@ public class main_ass6 {
     public static LinkedList<Route> routes;
     public static double[] sumGarbage;
     public final static double MAX_NO_IMPROVEMENT = 100;
+    public final static double VEHICLE_SPEED = 50;
     public static int MAX_STOPS;
     public static Random rng;
 

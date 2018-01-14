@@ -8,7 +8,7 @@ public class Solver {
 
     public final static double pheromonStrength = 10000;
     public final static double newPheromonShare = 0.2;
-    public final static double pheromonExpiryTime = 1000; 
+    public final static double pheromonExpiryTime = 1000;
 
     public Vehicle[] solution, bestSol;
     public long nRuns;
@@ -36,18 +36,19 @@ public class Solver {
             LinkedList<Vehicle> newSol = new LinkedList<>();
             for (int vechAmount = 0; vechAmount < 2 * nRuns; vechAmount++) {
 
-                Vehicle newAnt = new Vehicle();
                 boolean passTest = false;
                 int noImprovementCounter2 = 0;
                 while (!passTest && noImprovementCounter2 <= main_ass6.MAX_NO_IMPROVEMENT) {
-                    Node[] state_before = main_ass6.nodes.clone();
+                    double[] nodeCargoStateBeforeExploration = snapshotGarbageState();
+
+                    Vehicle newAnt = new Vehicle();
                     if (main_ass6.nodes[startId].startAnt(newAnt, garbIndex)) {
                         passTest = true;
                         newSol.add(newAnt);
                         noImprovementCounter2 = 0;
                         updatePheromones(newAnt);
                     } else {
-                        main_ass6.nodes = state_before;
+                        snapshotGarbageState(nodeCargoStateBeforeExploration);
                         noImprovementCounter2++;
                     }
                 }
@@ -123,6 +124,7 @@ public class Solver {
                     if (r.Capacity >= load && rtn == false) {
                         rtn = true;
                         distance += r.Distance;
+                        time += r.Distance / main_ass6.VEHICLE_SPEED;
                         solPath.routes.add(r);
                     }
                 }
@@ -142,7 +144,6 @@ public class Solver {
                         load += spaceLeft;
                     }
                     time += 12;
-
                 }
                 prev = dis;
             }
@@ -202,8 +203,22 @@ public class Solver {
 
         LinkedList<Route> allRoutes = main_ass6.routes;
         for (Route r : allRoutes) {
-            r.curr_pheromones =  Math.max(1, r.curr_pheromones*( 1-(tTime/pheromonExpiryTime)));
+            r.curr_pheromones = Math.max(1, r.curr_pheromones * (1 - (tTime / pheromonExpiryTime)));
         }
 
+    }
+
+    private double[] snapshotGarbageState() {
+        double[] rtn = new double[main_ass6.nNodes + 1];
+        for (int i = 1; i < main_ass6.nodes.length; i++) {
+            rtn[i] = main_ass6.nodes[i].currGarb[garbIndex];
+        }
+        return rtn;
+    }
+
+    private void snapshotGarbageState(double[] newState) {
+        for (int i = 1; i < main_ass6.nodes.length; i++) {
+            main_ass6.nodes[i].currGarb[garbIndex] = newState[i];
+        }
     }
 }

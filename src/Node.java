@@ -38,8 +38,8 @@ public class Node {
         if (nRou.Bidirectional) {
             allInRoutes.add(nRou);
             allOutRoutes.add(nRou);
-            inRoutes[nRou.Start].add(nRou);
-            outRoutes[nRou.End].add(nRou);
+            inRoutes[nRou.getStart(id)].add(nRou);
+            outRoutes[nRou.getEnd(id)].add(nRou);
             sortIn(nRou.Start);
             sortOut(nRou.End);
         } else if (nRou.Start == id) {
@@ -73,6 +73,7 @@ public class Node {
 
     public boolean startAnt(Vehicle v, int garbIndex) {
         v.addNode(this);
+        v.totalTime+=12;
         double spaceLeft = main_ass6.truckCapacity - v.load;
         if (spaceLeft > this.currGarb[garbIndex]) {
             v.load += this.currGarb[garbIndex];
@@ -81,27 +82,28 @@ public class Node {
             this.currGarb[garbIndex] -= spaceLeft;
             v.load += spaceLeft;
         }
-
+        if (v.path.size() > main_ass6.MAX_STOPS) {
+            return false;
+        }        
         if (v.loc == 1 && v.path.size() != 1) {
             return v.load != 0;
         }
-        if (v.path.size() > main_ass6.MAX_STOPS) {
-            return false;
-        }
+        
         double sumPheromones = 0;
         for (Route r : allOutRoutes) {
             sumPheromones += r.curr_pheromones;
         }
         if (sumPheromones == 0) {
             int select = main_ass6.rng.nextInt(allOutRoutes.size());
-            return main_ass6.nodes[allOutRoutes.get(select).End].startAnt(v, garbIndex);
+            return main_ass6.nodes[allOutRoutes.get(select).getEnd(id)].startAnt(v, garbIndex);
         } else {
             while (true) {
                 for (Route r : allOutRoutes) {
                     double chanceLimit = (r.curr_pheromones / sumPheromones) * 1000;
                     double rollDice = main_ass6.rng.nextDouble() * 1000;
                     if (rollDice <= chanceLimit) {
-                        return main_ass6.nodes[r.End].startAnt(v, garbIndex);
+                        v.totalTime += r.Distance / main_ass6.VEHICLE_SPEED;
+                        return main_ass6.nodes[r.getEnd(id)].startAnt(v, garbIndex);
                     }
                 }
             }
